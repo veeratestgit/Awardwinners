@@ -1,0 +1,83 @@
+package Tests;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+public class Tours2 {
+WebDriver driver;
+
+@BeforeClass
+public void openBrowser()
+{
+driver = new ChromeDriver();
+driver.manage().window().maximize();
+driver.manage().deleteAllCookies();
+driver.get("https://www.bookswagon.com/");
+}
+@Test(priority='1')
+public void Testwebsite() {
+String expectedtitle = "Online Bookstore | Buy Books Online | Read Books Online";
+String actualtitle = driver.getTitle();
+Assert.assertEquals(actualtitle, expectedtitle, "title donot match");
+System.out.println("Title of the page is: "+actualtitle);
+}
+@Test(priority='2')
+public void openaward() throws InterruptedException {
+
+Thread.sleep(3000);
+WebElement award = driver.findElement(By.xpath("//li[@id='ctl00_liAW']/a"));
+award.click();
+WebElement sort = driver.findElement(By.xpath("//select[@id='ddlSort']"));
+sort.click();
+WebElement sort1 = driver.findElement(By.xpath("//select[@id='ddlSort']/option[4]"));
+sort1.click();
+String expectedtitle1 = "Online BookStore India, Buy Books Online, Buy Book Online India - Bookswagon.com";
+String actualtitle1 = driver.getTitle();
+Assert.assertEquals(actualtitle1, expectedtitle1, "title donot match");
+System.out.println("New Title of the page is: "+actualtitle1);
+}
+@Test(priority='3')
+public void selectbook() throws InterruptedException
+{
+Thread.sleep(3000);
+//select the first book
+WebElement book = driver.findElement(By.xpath("//div[@id='listpromoproduct']/div[1]/div/a/img"));
+book.click();
+//add to cart
+WebElement buy = driver.findElement(By.xpath("//div[@id='ctl00_phBody_ProductDetail_divAddtoCart']/input"));
+buy.click();
+}
+@Test(priority='4')
+public void buybook() throws InterruptedException {
+Thread.sleep(1500);
+//click on carts to buy
+WebElement cart = driver.findElement(By.xpath("//span[@class='itemcount']/label[@id='ctl00_lblTotalCartItems']"));
+cart.click();
+//click on buy
+WebElement buy1 = driver.findElement(By.xpath("//input[@value='Buy']"));
+buy1.click();
+}
+@Test(priority='5')
+public void Login() throws InterruptedException {
+Thread.sleep(1500);
+WebElement email = driver.findElement(By.xpath("//input[@id='ctl00_phBody_SignIn_txtEmail']"));
+email.sendKeys("vijayvel10301@gmail.com");
+
+WebElement password = driver.findElement(By.xpath("//input[@id='ctl00_phBody_SignIn_txtPassword']"));
+password.sendKeys("group@123");
+
+WebElement login = driver.findElement(By.xpath("//a[@id='ctl00_phBody_SignIn_btnLogin']"));
+login.click();
+Thread.sleep(1500);
+}
+@AfterClass
+public void quit() {
+driver.close();
+}
+}
