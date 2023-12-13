@@ -1,74 +1,94 @@
-package Tests;
-
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Listeners;
+package tests;
 
 import java.io.IOException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.poi.EncryptedDocumentException;
 import org.testng.Assert;
 import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
-import pages.Award_winnersPage;
+import pages.AwardWinnersPage;
 import pages.HomePage;
+import pages.LoginPage;
 import pages.TestBase;
-import utilities.Excelread;
-import utilities.Listener;
+import utilities.ExcelUtility;
+import utilities.MyListener;
+import utilities.RetryAnalyzer;
 
-@Listeners(value =Listener.class)
-public class Award_winnersPageTest extends TestBase {
-	Award_winnersPage Ap;
+@Listeners(MyListener.class)
+public class AwardWinnersPageTest extends TestBase {
+	
 	HomePage hp;
-	Excelread e = new Excelread();
-	static int rowNum =0;
-  
+	LoginPage lp;
+	AwardWinnersPage ap;
+	Logger logger = LogManager.getLogger(AwardWinnersPageTest.class);
+	
+	//public static int RowNum=1;
 	@BeforeTest
-	public void start_browser() {
-		
-		openBrowser();
-		hp=new HomePage();
-		Ap=new Award_winnersPage();
-	}
-		
-	@Test(priority='1')
-	public void testopenaward() throws InterruptedException {
-		hp.clickaward();
-	}
-	@Test(priority='2')
-	public void testsortbook() throws InterruptedException {
-		
-		hp.sortaward();
-	}
-	@Test(priority='3')
-	public void testselectbook() throws InterruptedException {
-		
-		Ap.selectbook();
-	}
-	@Test(priority='4')
-	public void testbuybook() throws InterruptedException {
-		Ap.buybook();
-	}
-	@DataProvider
-	public Object[][] loginData() throws IOException
+	public void start_browser()
 	{
-		int LastRow = e.getLastRow("C:\\Users\\INDIA\\Desktop\\mytestdata\\TestData3.xls","Sheet1");
-		Object mydata[][] = new Object[LastRow+1][2];
-		for(int i=0;i<=LastRow;i++)
+		OpenBrowser();
+		hp = new HomePage(driver);
+		lp = new LoginPage(driver);
+		ap = new AwardWinnersPage(driver);
+	}
+
+	
+	@Test(dataProvider="LoginDetails", priority=1,retryAnalyzer=RetryAnalyzer.class)
+	public void test_login(String email, String password) throws IOException, InterruptedException
+	{
+		hp.clickLogin();
+		lp.user_login(email,password);
+		String uname=lp.get_uname();
+		
+		//Assert.assertEquals(uname, email);
+		Assert.assertNotEquals(uname, "My Account");
+		//lp.user_logout();
+	}
+	
+	  @DataProvider(name="LoginDetails") public Object[][] datasupplier() throws
+	  EncryptedDocumentException, IOException {
+	  Object[] [] input = ExcelUtility.getTestData("Sheet2"); 
+	  return input;
+	  
+	  }
+	  
+	  @Test(priority=2)
+	  public void click_AwardWinner() {
+		  logger.info("Testing AwardWinners Page Functionality");
+		  hp.clickaward();
+		  String expectedTitle = "Online BookStore India, Buy Books Online, Buy Book Online India - Bookswagon.com"; 
+      		  String actualTitle = driver.getTitle();
+                  Assert.assertEquals(expectedTitle, actualTitle);
+                  System.out.println("Title of the page is: "+actualTitle);
+		  ap.sortaward();
+	  }
+	  
+	  @Test(priority=3)
+	  public void click_book() throws InterruptedException {
+		  ap.buybook();
+		  Assert.assertTrue(ap.logo());
+	  }
+	  @Test(priority=4)
+	  public void buy_book() throws InterruptedException {
+		  ap.Cart();
+	
+	  }
+	  @Test(priority=5)
+	  public void address() throws InterruptedException {
+		Assert.assertTrue(ap.logoutvisible());
+		ap.Save();
+		lp.user_logout();
+	  }
+	  @AfterTest
+		public void close_browser()
 		{
-			mydata[i][0]=e.readExcel("C:\\Users\\INDIA\\Desktop\\mytestdata\\TestData3.xls","Sheet1",i,0);
-			mydata[i][1]=e.readExcel("C:\\Users\\INDIA\\Desktop\\mytestdata\\TestData3.xls","Sheet1",i,1);
+			driver.close();
 		}
-		return mydata;
-	}
-	@Test(dataProvider="loginData",priority='5')
-	public void testLogin(String email,String password) throws IOException, InterruptedException {
-		Ap.LoginDetails(email,password);
-		rowNum=rowNum+1;
-	}
-	@AfterTest
-	public void close_browser() {
-		driver.close();
-	}
+		
 }
